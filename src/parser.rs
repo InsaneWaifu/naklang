@@ -2,6 +2,7 @@ use crate::lexer::Tok;
 use crate::InputStream;
 use alloc::{
     borrow::ToOwned,
+    boxed::Box,
     string::{String, ToString},
     vec::Vec,
 };
@@ -27,6 +28,7 @@ macro_rules! parse {
         {
             let $v = $x.next();
             if matches!($v, Some(Token($p, ..))) {
+                #[allow(unused_variables)]
                 let $v = $v.unwrap();
                 parse!($x $b {$($pt=$vt),*})
             }
@@ -37,6 +39,7 @@ macro_rules! parse {
         {
         let $v = $x.next();
         if matches!($v, Some(Token($p, ..))) {
+            #[allow(unused_variables)]
             let $v = $v.unwrap();
             {$b}
             return true
@@ -87,8 +90,8 @@ pub trait Parse<I, O> {
 
 #[derive(Debug)]
 pub enum Atom<'a> {
-    GlobalIdent(Tok, Token<'a>),
-    LocalIdent(Tok, Token<'a>),
+    GlobalIdent(Token<'a>),
+    LocalIdent(Token<'a>),
 }
 
 impl<'a> Parse<&Token<'a>, Atom<'a>> for Atom<'a> {
@@ -97,13 +100,44 @@ impl<'a> Parse<&Token<'a>, Atom<'a>> for Atom<'a> {
         let mut li = None;
 
         parse!(is @ {Tok::Dollar=dl,Tok::Ident=pi} => {
-            gi = Some(Atom::GlobalIdent(dl.0, pi.clone()));
+            gi = Some(Atom::GlobalIdent(pi.clone()));
         });
         retok!(gi);
         parse!(is @ {Tok::Ampersand=amp,Tok::Ident=pi} => {
-            li = Some(Atom::LocalIdent(amp.0, pi.clone()));
+            li = Some(Atom::LocalIdent(pi.clone()));
         });
         retok!(li);
         Err("Nah".to_owned())
     }
+}
+
+pub enum Type<'a> {
+    S8,
+    U8,
+    S16,
+    U16,
+    S32,
+    U32,
+    F32,
+    S64,
+    U64,
+    F64,
+    Global(Atom<'a>),
+}
+
+pub enum AstNode<'a> {
+    Assign(Atom<'a>, Box<AstNode<'a>>),
+    JustIdent(Box<AstNode<'a>>),
+    Const(Atom<'a>),
+    Ptroffset(Type<'a>, Atom<'a>, Atom<'a>),
+    Load(Type<'a>, Atom<'a>),
+    Store(Type<'a>, Atom<'a>, Atom<'a>),
+    Add(Type<'a>, Atom<'a>, Atom<'a>),
+    Sub(Type<'a>, Atom<'a>, Atom<'a>),
+    Div(Type<'a>, Atom<'a>, Atom<'a>),
+    Mul(Type<'a>, Atom<'a>, Atom<'a>),
+    Call(Type<'a>, Atom<'a>, Vec<(Type<'a>, Atom<'a>)>),
+    Ret(Type<'a>, Atom<'a>),
+    Stalloc(Type<'a>, Atom<'a>),
+    Dbg(Type<'a>, Atom<'a>),
 }

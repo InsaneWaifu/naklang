@@ -48,7 +48,7 @@ Atoms can look like:
 |mul  |Same as above||
 |call |`&result = call(s64) $magik (s64 &x, u64 &y)`||
 |ret |`ret(s64) &result`|Ret without a type and operand is only acceptable in a void function|
-|stalloc |`&newarr = stalloc s32 times 4`|Allocate on stack the size of given type multiplied by the operand. Returns a pointer to the memory|
+|stalloc |`&newarr = stalloc s32 times !(u8)4`|Allocate on stack the size of given type multiplied by the operand. Returns a pointer to the memory|
 |ptroffset|`&elementtwo = ptroffset(s32) ptr &newarr !(u32)1`|Zero-indexed offset by type|
 |load|`&elementone = load(s32) ptr &newarr`||
 |store|`store(s32) ptr &elementtwo &result` ||
@@ -121,7 +121,7 @@ fn $main() () {
 ; Array
 fn $main() () {
     ; Allocate on stack an array of 25 integers
-    &arr = stalloc u32 times 25
+    &arr = stalloc u32 times !(u8)25
     ; Set the 3rd element to 16
     &ptr3 = ptroffset(u32) ptr &arr !(u8)2
     store(u32) ptr &ptr3 !(u32)16

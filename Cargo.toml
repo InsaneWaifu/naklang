@@ -1,0 +1,14 @@
+
+[package]
+name = "naklang"
+version = "0.1.0"
+edition = "2021"
+
+
+[lib]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+logos = { version = "0.13.0", default-features = false, features = ["export_derive", "logos-derive"] }

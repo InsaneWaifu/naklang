@@ -35,8 +35,8 @@ Atoms can look like:
 `$[IDENT]` - Global identifier  
 `&[IDENT]` - Local identifier  
 `!([TYPE])[CONST]` - e.g. !(u32)11  
-`cptroffset [TYPE] [CONST]` - similar to ptroffset instruction but represents a constant number to offset by.   
-`sptroffset [TYPE] [PATH]` - gets a ptroffset to a struct field
+`cptroffset [TYPE], [CONST]` - similar to ptroffset instruction but represents a constant number to offset by.   
+`sptroffset [TYPE], [PATH]` - gets a ptroffset to a struct field
 
 ---
 
@@ -51,7 +51,7 @@ Atoms can look like:
 |stalloc |`&newarr = stalloc s32 times !(u8)4`|Allocate on stack the size of given type multiplied by the operand. Returns a pointer to the memory|
 |ptroffset|`&elementtwo = ptroffset(s32) ptr &newarr !(u32)1`|Zero-indexed offset by type|
 |load|`&elementone = load(s32) ptr &newarr`||
-|store|`store(s32) ptr &elementtwo &result` ||
+|store|`store(s32) ptr &elementtwo, &result` ||
 |dbg  |`dbg(s64) &result`|Dbg may be a no-op or it may output the operand in some  way, depending on the target platform|
 
 
@@ -124,6 +124,6 @@ fn $main() () {
     &arr = stalloc u32 times !(u8)25
     ; Set the 3rd element to 16
     &ptr3 = ptroffset(u32) ptr &arr !(u8)2
-    store(u32) ptr &ptr3 !(u32)16
+    store(u32) ptr &ptr3, !(u32)16
 }
 ```

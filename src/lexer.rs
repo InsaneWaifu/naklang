@@ -1,8 +1,10 @@
 use logos::Logos;
 
 #[derive(Logos, Debug, PartialEq, Clone, Copy)]
-#[logos(skip r"[ \t\n\f]+")]
 pub enum Tok {
+    #[regex(r";.*\n?", logos::skip)]
+	#[regex(r"[ \t\n\f]+", logos::skip)]
+	Ignore,
     #[token("$")]
     Dollar,
     #[token("&")]
@@ -21,4 +23,6 @@ pub enum Tok {
     CloseBracket,
     #[regex("(0[xb])?[0-9_a-fA-F]+", priority = 2)]
     Number,
+    #[regex("=")]
+    Equals,
 }

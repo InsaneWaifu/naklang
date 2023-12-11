@@ -1,14 +1,21 @@
 use logos::Logos;
-use naklang::{Atom, CharStream, InputStream, Parse, Tok, TokStream};
+use naklang::{AstNode, Atom, CharStream, InputStream, Parse, Tok, TokStream};
 
 fn main() {
-    let tl = Tok::lexer("&result, $fn");
+    let tl = Tok::lexer(
+        r#"
+
+        ; Numbers to add
+        &num1 = !(u32)9
+        &num2 = !(u32)11
+        &result = add(u32) &num1, &num2
+        dbg(u32) &result
+      
+"#,
+    );
+    dbg!(tl.clone().collect::<Vec<_>>());
     let mut tokstream = TokStream::new(tl);
-    let c: Result<Atom, String> = Atom::parse(&mut tokstream);
-    let _ = dbg!(c);
-    let a = tokstream.next().unwrap().0;
-    println!("token {:?}", a);
-    assert!(a == Tok::Comma);
-    let c: Result<Atom, String> = Atom::parse(&mut tokstream);
-    let _ = dbg!(c);
+    while let Ok(x) = AstNode::parse(&mut tokstream) {
+        println!("{:?}", x);
+    }
 }

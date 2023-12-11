@@ -15,6 +15,10 @@ pub enum Tok {
     Bang,
     #[regex("[_a-zA-Z][_a-zA-Z0-9]*")]
     Ident,
-    #[regex("[()]")]
-    Control,
+    #[regex("\\(")]
+    OpenBracket,
+    #[regex("\\)")]
+    CloseBracket,
+    #[regex("(0[xb])?[0-9_a-fA-F]+", priority = 2)]
+    Number,
 }

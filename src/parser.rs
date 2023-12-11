@@ -18,16 +18,18 @@ macro_rules! retok {
 
 macro_rules! parse {
     ($name:ident @ {$($p:pat=$v:ident),*} => $b:tt) => {
+      {
+
         $name.optional_next(&mut |x| {
             parse!(x $b {$($p=$v),*});
             false
-        })
+        })}
     };
 
     ($x:ident $b:tt {$p:pat=$v:ident, $($pt:pat=$vt:ident),*}) => {
         {
             let $v = $x.next();
-            if matches!($v, Some(Token($p, ..))) {
+            if matches!($v, Some($p)) {
                 #[allow(unused_variables)]
                 let $v = $v.unwrap();
                 parse!($x $b {$($pt=$vt),*})
@@ -38,7 +40,7 @@ macro_rules! parse {
     ($x:ident $b:tt {$p:pat=$v:ident} ) => {
         {
         let $v = $x.next();
-        if matches!($v, Some(Token($p, ..))) {
+        if matches!($v, Some($p)) {
             #[allow(unused_variables)]
             let $v = $v.unwrap();
             {$b}
@@ -92,21 +94,40 @@ pub trait Parse<I, O> {
 pub enum Atom<'a> {
     GlobalIdent(Token<'a>),
     LocalIdent(Token<'a>),
+    Const(Token<'a>, Token<'a>),
+    CPtroffset(Token<'a>, Box<Atom<'a>>),
+    SPtroffset(Token<'a>, Vec<Token<'a>>),
+}
+
+macro_rules! parseinto {
+    ($is:ident, $id:ident @ $($x:tt)*) => {
+      let mut $id = None;
+      parse!($is @ $($x)*);
+      retok!($id);
+    };
 }
 
 impl<'a> Parse<&Token<'a>, Atom<'a>> for Atom<'a> {
     fn parse(is: &mut dyn InputStream<&Token<'a>>) -> Result<Atom<'a>, String> {
-        let mut gi = None;
-        let mut li = None;
-
-        parse!(is @ {Tok::Dollar=dl,Tok::Ident=pi} => {
+        parseinto!(is, gi @ {Token(Tok::Dollar,..)=dl,Token(Tok::Ident,..)=pi} => {
             gi = Some(Atom::GlobalIdent(pi.clone()));
         });
-        retok!(gi);
-        parse!(is @ {Tok::Ampersand=amp,Tok::Ident=pi} => {
+        parseinto!(is, li @ {Token(Tok::Ampersand,..)=amp,Token(Tok::Ident,..)=pi} => {
             li = Some(Atom::LocalIdent(pi.clone()));
         });
-        retok!(li);
+        parseinto!(is, co @ {Token(Tok::Bang,..)=_b,Token(Tok::OpenBracket,..)=_o,Token(Tok::Ident,..)=ty,Token(Tok::CloseBracket,..)=_c,Token(Tok::Number,..)=num} => {
+          co = Some(Atom::Const(ty.clone(), num.clone()));
+        });
+        parseinto!(is, cpt @ {
+          Token(Tok::Ident, _, "cptroffset")=_c,
+          Token(Tok::Ident, ..)=ty
+        } => {
+          let num = Atom::parse(is);
+          if (num.is_err()) {
+            return false;
+          }
+          cpt = Some(Atom::CPtroffset(ty.clone(), Box::new(num.unwrap())));
+        });
         Err("Nah".to_owned())
     }
 }

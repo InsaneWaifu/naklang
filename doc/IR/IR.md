@@ -34,8 +34,8 @@ Operation usage in this table loosely follows this syntax:
 Atoms can look like:  
 `$[IDENT]` - Global identifier  
 `&[IDENT]` - Local identifier  
-`!([TYPE])[CONST]` - e.g. (u32)11  
-`cptroffset [TYPE] [CONST]` - similar to ptroffset instruction but uses a constant number to offset by.   
+`!([TYPE])[CONST]` - e.g. !(u32)11  
+`cptroffset [TYPE] [CONST]` - similar to ptroffset instruction but represents a constant number to offset by.   
 `sptroffset [TYPE] [PATH]` - gets a ptroffset to a struct field
 
 ---

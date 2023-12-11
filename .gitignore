@@ -1,1 +1,4 @@
 target/
+.replit
+replit.nix
+.cargo

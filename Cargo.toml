@@ -12,3 +12,4 @@ edition = "2021"
 
 [dependencies]
 logos = { version = "0.13.0", default-features = false, features = ["export_derive", "logos-derive"] }
+paste = "1.0.14"

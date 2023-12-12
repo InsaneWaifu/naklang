@@ -21,7 +21,7 @@ pub enum Tok {
     OpenBracket,
     #[regex("\\)")]
     CloseBracket,
-    #[regex("(0[xb])?[0-9_a-fA-F]+", priority = 2)]
+    #[regex("(0x[a-fA-F0-9]+)|(0b[10]+)|([0-9]+)+")]
     Number,
     #[regex("=")]
     Equals,

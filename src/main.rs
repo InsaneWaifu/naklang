@@ -1,6 +1,5 @@
 use logos::Logos;
-use naklang::{AstNode, Atom, CharStream, InputStream, Parse, Tok, TokStream};
-
+use naklang::Tok;
 fn main() {
     let tl = Tok::lexer(
         r#"
@@ -13,9 +12,4 @@ fn main() {
       
 "#,
     );
-    dbg!(tl.clone().collect::<Vec<_>>());
-    let mut tokstream = TokStream::new(tl);
-    while let Ok(x) = AstNode::parse(&mut tokstream) {
-        println!("{:?}", x);
-    }
 }

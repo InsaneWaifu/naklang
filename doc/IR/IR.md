@@ -46,6 +46,7 @@ Atoms can look like:
 |sub  |`&y = sub(u64) &something, !(u64)0b1111`||
 |div  |Same as above||
 |mul  |Same as above||
+|cpy  |`&x = cpy !(s64)0x10`||
 |call |`&result = call(s64) $magik (s64 &x, u64 &y)`||
 |ret |`ret(s64) &result`|Ret without a type and operand is only acceptable in a void function|
 |stalloc |`&newarr = stalloc s32 times !(u8)4`|Allocate on stack the size of given type multiplied by the operand. Returns a pointer to the memory|
@@ -105,8 +106,8 @@ fn $add_numbers(u32) (u32 x, u32 y) {
 fn $main() () {
 
   ; Numbers to add
-  &num1 = !(u32)9
-  &num2 = !(u32)11
+  &num1 = cpy !(u32)9
+  &num2 = cpy !(u32)11
 
   ; Call the add function
   &sum = call $add_numbers(u32) (u32 &num1, u32 &num2)

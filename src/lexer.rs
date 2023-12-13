@@ -2,7 +2,7 @@ use logos::Logos;
 
 #[derive(Logos, Debug, PartialEq, Clone, Copy)]
 pub enum Tok {
-    #[regex(r";.*\n?", logos::skip)]
+    #[regex(r"[ \t\n\f]*;.*\n?", logos::skip)]
     #[regex(r"[ \t\n\f]+", logos::skip)]
     Err,
     #[token("$")]

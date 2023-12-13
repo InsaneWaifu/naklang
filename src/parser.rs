@@ -40,13 +40,12 @@ impl<'a, A, B, C> BoxedParser<'a, A, B, C> {
 }
 
 // combinators
-impl<'a, I, O, E> BoxedParser<'a, I, O, E> {
-    pub fn map<F, O2>(self, f: F) -> BoxedParser<'a, I, O2, E>
+impl<'a, I, O> BoxedParser<'a, I, O, ParserErr> {
+    pub fn map<F, O2>(self, f: F) -> BoxedParser<'a, I, O2, ParserErr>
     where
         F: Fn(O) -> O2 + 'a,
         I: 'a,
         O: 'a,
-        E: 'a,
     {
         BoxedParser(Box::new(move |i: I| {
             let sp = self.parse(i);
@@ -54,16 +53,37 @@ impl<'a, I, O, E> BoxedParser<'a, I, O, E> {
         }))
     }
 
-    pub fn chain<O2>(self, ting: impl Parser<I, O2, E> + 'a) -> BoxedParser<'a, I, (O, O2), E>
+    pub fn chain<O2>(self, ting: impl Parser<I, O2, ParserErr> + 'a) -> BoxedParser<'a, I, (O, O2), ParserErr>
     where
         I: 'a,
         O: 'a,
-        E: 'a,
     {
         BoxedParser(Box::new(move |i: I| {
             let sp = self.parse(i)?;
+            // TODO map_err to make sure sp2 error gobbled includes what sp parsed
             let sp2 = ting.parse(sp.0)?;
             Ok((sp2.0, (sp.1, sp2.1), sp.2 + sp2.2))
+        }))
+    }
+
+    pub fn or(self, ting: impl Parser<I, O, ParserErr> + 'a) -> BoxedParser<'a, I, O, ParserErr>
+    where
+        I: 'a + Clone,
+        O: 'a,
+    {
+        BoxedParser(Box::new(move |i: I| {
+            // TODO map_err to provide a list of both selfparse and tingparse expected string
+            let selfparse = self.parse(i.clone());
+            if selfparse.is_ok() {
+                selfparse
+            } else {
+                ting.parse(i).map_err(|e| {
+                  let sp = unsafe{selfparse.unwrap_err_unchecked()};
+                  if e.gobbled > sp.gobbled {
+                    return e;
+                  }
+                })
+            }
         }))
     }
 }

@@ -20,6 +20,7 @@ pub enum Type<'a> {
 
 #[derive(Debug)]
 pub enum AstNode<'a> {
+    Err(ParserErr, Range),
     Local(&'a str, Range),
     Global(&'a str, Range),
     Const(Type<'a>, &'a str, Range),
@@ -66,6 +67,7 @@ impl AstNode<'_> {
             AstNode::Store(_, _, _, r) => r.clone(),
             AstNode::Dbg(_, _, r) => r.clone(),
             AstNode::Equals(_, _, r) => r.clone(),
+            AstNode::Err(_, r) => r.clone(),
         }
     }
 
@@ -263,7 +265,7 @@ pub fn stmt<'a>() -> BoxedParser<'a, &'a [Token<'a>], AstNode<'a>, ParserErr> {
 
 fn main() {
     let src = r#"&num1 = cpy !(u32)9
-    &num2 = cpy !(u32)11
+    &num2 = cpy r!(u32)11
     &result = add(u32) &num1, &num2
     dbg(u32) &result
 

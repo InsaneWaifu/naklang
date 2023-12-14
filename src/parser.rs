@@ -357,3 +357,29 @@ pub fn tok<'a>(tomatch: Tok) -> BoxedParser<'a, &'a [Token<'a>], &'a str, Parser
         }),
     })
 }
+
+pub fn match_until<'a, O>(
+    p2: BoxedParser<'a, &'a [Token<'a>], O, ParserErr>,
+) -> BoxedParser<'a, &'a [Token<'a>], O, ParserErr>
+where
+    O: 'a,
+{
+    BoxedParser(Box::new(move |i: &'a [Token]| {
+        let mut eidx = 0;
+        let mut expected = "?".to_string();
+        for j in 0..i.len() {
+            eidx = i[j].1.end;
+            let pp = p2.parse(&i[j..]);
+            if pp.is_ok() {
+                return Ok(pp.unwrap());
+            } else {
+                expected = pp.map(|_| ()).unwrap_err().expected;
+            }
+        }
+        Err(ParserErr {
+            end_idx: eidx,
+            expected: expected,
+            next: None,
+        })
+    }))
+}
